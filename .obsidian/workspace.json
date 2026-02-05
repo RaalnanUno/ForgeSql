@@ -185,6 +185,7 @@
   },
   "active": "bb89ff7907e082ac",
   "lastOpenFiles": [
+    "reactui/package-lock.json",
     "tsup.config.bundled_9azsxwzj5o6.mjs",
     "tsup.config.bundled_6df36xnc5mc.mjs",
     "tsup.config.bundled_onmk5ioly3.mjs",
@@ -195,7 +196,6 @@
     "reactui/node_modules/@types/react-dom/static.node.d.ts",
     "reactui/node_modules/@types/react-dom/static.edge.d.ts",
     "reactui/node_modules/@types/react-dom/static.browser.d.ts",
-    "reactui/node_modules/@types/react-dom/server.node.d.ts",
     "reactui/dist/vite.svg",
     "reactui/node_modules/scheduler/README.md",
     "reactui/node_modules/punycode/README.md",
