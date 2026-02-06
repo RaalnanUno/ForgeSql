@@ -1,14 +1,4 @@
-OK, this works.
-I'd like to make some changes to the UI.
-We might want to use BootStrap cards or something. When I select a table that has a lot of data, the table and view navigation on the left gets smashed.
-Also, we want to make use of some sort of table editor like DataTables.
-
-The editor fields need to be datatype aware.
-
-- dates get a date picker
-- numbers get a number element
-- large text gets a textArea
-- etc...
+Uncaught SyntaxError: The requested module '/node_modules/.vite/deps/@tanstack_react-table.js?v=3885f3bc' does not provide an export named 'ColumnDef' (at TableEditor.tsx:4:3)
 
 ## package.md
 
@@ -53,4 +43,8 @@ The editor fields need to be datatype aware.
 ## reactui/src/components/ResultsGrid.ts
 .
 ![[reactui/src/components/ResultsGrid.md]]
+.
+## reactui/src/components/TableEditor.ts
+.
+![[reactui/src/components/TableEditor.md]]
 .

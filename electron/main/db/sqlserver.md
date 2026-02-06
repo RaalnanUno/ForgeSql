@@ -22,7 +22,6 @@ export function buildOdbcConnectionString(profile: SqlServerConnectionProfile): 
   const server = normalizeServer(rawServer);
   const database = profile.database ?? "master";
 
-  // IMPORTANT: use an explicit ODBC driver (match what sqlcmd is using)
   const driver = "ODBC Driver 17 for SQL Server";
 
   const encrypt = profile.encrypt ?? false;
@@ -47,11 +46,8 @@ export function buildOdbcConnectionString(profile: SqlServerConnectionProfile): 
 }
 
 function buildConfig(profile: SqlServerConnectionProfile): sql.config {
-  // If user provided a raw connection string, use it exactly.
   const raw = (profile.connectionString ?? "").trim();
   if (raw) {
-    // Keep driver consistent with how msnodesqlv8 likes it.
-    // If their raw string already includes Driver=... it’s fine.
     return {
       driver: "ODBC Driver 17 for SQL Server",
       connectionString: raw.endsWith(";") ? raw : raw + ";",
@@ -61,7 +57,6 @@ function buildConfig(profile: SqlServerConnectionProfile): sql.config {
     } as any;
   }
 
-  // Otherwise generate.
   const built = buildOdbcConnectionString(profile);
   return {
     driver: built.driver,
@@ -78,7 +73,7 @@ export async function openDb(profile: SqlServerConnectionProfile) {
 
   console.log("[db] connecting with cfg:", {
     driver: (cfg as any).driver,
-    connectionString: (cfg as any).connectionString ? "<present>" : "<missing>",
+    connectionString: (cfg as any).connectionString ? "***" : "",
   });
 
   pool = await new sql.ConnectionPool(cfg).connect();
@@ -91,6 +86,25 @@ export async function closeDb() {
   } finally {
     pool = null;
   }
+}
+
+export async function query(sqlText: string, params?: Record<string, any>) {
+  if (!pool) throw new Error("No open connection.");
+  const req = pool.request();
+
+  if (params) {
+    for (const [k, v] of Object.entries(params)) {
+      req.input(k, v as any);
+    }
+  }
+
+  const resp = await req.query(sqlText);
+
+  const recordset = resp.recordset ?? [];
+  const columns = recordset.length ? Object.keys(recordset[0]) : [];
+  const rows = recordset.map((r: any) => columns.map((c) => r[c]));
+
+  return { columns, rows, rowCount: resp.rowsAffected?.[0] ?? 0, recordset };
 }
 
 export async function queryText(sqlText: string) {

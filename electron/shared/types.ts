@@ -1,5 +1,41 @@
 // File: electron/shared/types.ts
 
+export type DbColumnInfo = {
+  name: string;
+  dataType: string;
+  isNullable: boolean;
+  maxLength: number | null;
+  numericPrecision: number | null;
+  numericScale: number | null;
+  isIdentity: boolean;
+};
+
+export type DbDescribeTableResponse = {
+  ok: boolean;
+  error?: string;
+  columns?: DbColumnInfo[];
+};
+
+export type DbPrimaryKeyResponse = {
+  ok: boolean;
+  error?: string;
+  primaryKey?: string[];
+};
+
+export type DbUpdateCellRequest = {
+  fullName: string;                 // dbo.Table
+  pk: Record<string, any>;          // { Id: 123 } or composite
+  column: string;                   // ColumnName
+  value: any;                       // New value
+};
+
+export type DbInsertRowRequest = {
+  fullName: string;
+  values: Record<string, any>;      // { ColA: 1, ColB: "x" } (exclude identity)
+};
+
+export type DbOkResponse = { ok: boolean; error?: string };
+
 export type SqlServerAuth =
   | { kind: "windows" }
   | { kind: "sql"; user: string; password: string };
