@@ -20,8 +20,23 @@
               "icon": "lucide-file",
               "title": "prompt"
             }
+          },
+          {
+            "id": "fc0c6f86816c3a8c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "prompt.md",
+                "mode": "preview",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "prompt"
+            }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -183,19 +198,20 @@
       "bases:Create new base": false
     }
   },
-  "active": "bb89ff7907e082ac",
+  "active": "fc0c6f86816c3a8c",
   "lastOpenFiles": [
+    "electron/dist/main/index.js.map",
+    "tsup.config.bundled_lhjntckyw6j.mjs",
+    "electron/dist/main/index.js",
+    "tsup.config.bundled_h88yqs71hsn.mjs",
+    "reactui/dist/assets/index-XFkvN5g7.js",
+    "reactui/dist/assets/index-DQVco86Z.css",
+    "tsup.config.bundled_dg0z8r18sgm.mjs",
     "DBForge.md",
     "tsup.config.bundled_xlhw30jva9c.mjs",
-    "electron/dist/main/index.js.map",
     "tsup.config.bundled_35iuk90pulk.mjs",
     "tsup.config.bundled_t0k4zrj7zqg.mjs",
     "tsup.config.bundled_v6e9vf0n34l.mjs",
-    "tsup.config.bundled_3k53ss1lvuu.mjs",
-    "tsup.config.bundled_hhso1ph7c6.mjs",
-    "tsup.config.bundled_nvyqu0paoj.mjs",
-    "electron/dist/main/index.js",
-    "tsup.config.bundled_hhsqshd4yq8.mjs",
     "node_modules/path-key/readme.md",
     "node_modules/ms/license.md",
     "node_modules/ms/readme.md",
@@ -220,7 +236,6 @@
     "node_modules/events/Readme.md",
     "node_modules/tar-fs/README.md",
     "node_modules/es-errors/README.md",
-    "node_modules/asynckit/README.md",
     "node_modules/js-md4/doc/fonts/OpenSans-Regular-webfont.svg",
     "node_modules/js-md4/doc/fonts/OpenSans-LightItalic-webfont.svg",
     "node_modules/js-md4/doc/fonts/OpenSans-Light-webfont.svg",

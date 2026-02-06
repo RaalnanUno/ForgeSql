@@ -2,12 +2,21 @@
 
 type Props = {
   disabled: boolean;
+  databases: string[];
+  tables: string[];
   views: string[];
   onRefresh: () => void;
   onSelectTop: (fullName: string) => void;
 };
 
-export default function ObjectExplorer({ disabled, views, onRefresh, onSelectTop }: Props) {
+export default function ObjectExplorer({
+  disabled,
+  databases,
+  tables,
+  views,
+  onRefresh,
+  onSelectTop,
+}: Props) {
   return (
     <div className="p-2">
       <div className="d-flex align-items-center mb-2">
@@ -18,7 +27,39 @@ export default function ObjectExplorer({ disabled, views, onRefresh, onSelectTop
         </button>
       </div>
 
-      {/* Databases... unchanged */}
+      <div className="mb-3">
+        <div className="text-muted small mb-1">Databases</div>
+        <ul className="list-group">
+          {databases.map((d) => (
+            <li key={d} className="list-group-item py-1">
+              {d}
+            </li>
+          ))}
+          {!databases.length && <li className="list-group-item py-1 text-muted">None</li>}
+        </ul>
+      </div>
+
+      <div className="mb-3">
+        <div className="text-muted small mb-1">Tables</div>
+        <ul className="list-group">
+          {tables.map((t) => (
+            <li key={t} className="list-group-item py-1 d-flex align-items-center">
+              <span className="text-truncate" title={t}>
+                {t}
+              </span>
+              <button
+                className="btn btn-sm btn-outline-primary ms-auto"
+                onClick={() => onSelectTop(t)}
+                disabled={disabled}
+                title="Select Top 100"
+              >
+                Top 100
+              </button>
+            </li>
+          ))}
+          {!tables.length && <li className="list-group-item py-1 text-muted">None</li>}
+        </ul>
+      </div>
 
       <div>
         <div className="text-muted small mb-1">Views</div>

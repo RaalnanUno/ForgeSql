@@ -36,7 +36,7 @@ function normalizeServer(raw) {
   if (s === "." || lower === "localhost" || lower === "(local)") return ".";
   return s;
 }
-function buildConfig(profile) {
+function buildOdbcConnectionString(profile) {
   const rawServer = (profile.server ?? ".").trim();
   const server = normalizeServer(rawServer);
   const database = profile.database ?? "master";
@@ -48,19 +48,31 @@ function buildConfig(profile) {
   parts.push(`Server=${server}`);
   parts.push(`Database=${database}`);
   if (profile.auth.kind === "windows") {
-    parts.push(`Trusted_Connection=Yes`);
+    parts.push("Trusted_Connection=Yes");
   } else {
     parts.push(`Uid=${profile.auth.user}`);
     parts.push(`Pwd=${profile.auth.password}`);
   }
   parts.push(`Encrypt=${encrypt ? "Yes" : "No"}`);
   parts.push(`TrustServerCertificate=${trustServerCertificate ? "Yes" : "No"}`);
-  const connectionString = parts.join(";") + ";";
+  return { driver, connectionString: parts.join(";") + ";" };
+}
+function buildConfig(profile) {
+  const raw = (profile.connectionString ?? "").trim();
+  if (raw) {
+    return {
+      driver: "ODBC Driver 17 for SQL Server",
+      connectionString: raw.endsWith(";") ? raw : raw + ";",
+      options: {
+        trustedConnection: profile.auth.kind === "windows"
+      }
+    };
+  }
+  const built = buildOdbcConnectionString(profile);
   return {
-    driver,
-    connectionString,
+    driver: built.driver,
+    connectionString: built.connectionString,
     options: {
-      // still okay to include; connectionString is what matters
       trustedConnection: profile.auth.kind === "windows"
     }
   };
@@ -69,12 +81,8 @@ async function openDb(profile) {
   await closeDb();
   const cfg = buildConfig(profile);
   console.log("[db] connecting with cfg:", {
-    server: cfg.server,
-    database: cfg.database,
-    trustedConnection: cfg.options?.trustedConnection,
-    user: cfg.user ? "<set>" : "<none>",
     driver: cfg.driver,
-    connectionString: cfg.connectionString ? "<set>" : "<none>"
+    connectionString: cfg.connectionString ? "<present>" : "<missing>"
   });
   pool = await new import_msnodesqlv8.default.ConnectionPool(cfg).connect();
 }
@@ -167,7 +175,8 @@ import_electron.ipcMain.handle(
   async (_evt, args) => {
     try {
       await openDb(args.profile);
-      return { ok: true };
+      const used = (args.profile.connectionString ?? "").trim() || buildOdbcConnectionString(args.profile).connectionString;
+      return { ok: true, connectionString: used };
     } catch (e) {
       console.error("db:open failed raw:", e);
       console.error("db:open failed inspect:", import_util.default.inspect(e, { depth: 10, colors: false, showHidden: true }));

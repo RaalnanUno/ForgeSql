@@ -10,7 +10,9 @@ import {
   DbQueryResponse,
   SqlServerConnectionProfile,
 } from "../shared/types";
-import { openDb, closeDb, queryText } from "./db/sqlserver";
+
+import { openDb, closeDb, queryText, buildOdbcConnectionString } from "./db/sqlserver";
+
 import { listDatabasesSql, listTablesSql, listViewsSql } from "./db/queries";
 
 let win: BrowserWindow | null = null;
@@ -85,8 +87,15 @@ ipcMain.handle(
     args: { profile: SqlServerConnectionProfile },
   ): Promise<DbOpenResponse> => {
     try {
-      await openDb(args.profile);
-      return { ok: true };
+await openDb(args.profile);
+
+// return the exact connection string used
+const used =
+  (args.profile.connectionString ?? "").trim() ||
+  buildOdbcConnectionString(args.profile).connectionString;
+
+return { ok: true, connectionString: used };
+
 } catch (e: any) {
   console.error("db:open failed raw:", e);
   console.error("db:open failed inspect:", util.inspect(e, { depth: 10, colors: false, showHidden: true }));

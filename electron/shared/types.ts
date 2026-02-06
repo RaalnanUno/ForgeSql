@@ -1,17 +1,33 @@
-export type SqlAuth =
-  | { kind: "windows" } // (Trusted Connection)
+// File: electron/shared/types.ts
+
+export type SqlServerAuth =
+  | { kind: "windows" }
   | { kind: "sql"; user: string; password: string };
 
 export type SqlServerConnectionProfile = {
   name: string;
-  server: string; // e.g. "localhost\\SQLEXPRESS" or "(localdb)\\MSSQLLocalDB"
-  database?: string; // optional for initial connect
-  auth: SqlAuth;
-  encrypt?: boolean; // default false for local; true for Azure/remote
-  trustServerCertificate?: boolean; // often true locally
+  server?: string;
+  database?: string;
+  auth: SqlServerAuth;
+  encrypt?: boolean;
+  trustServerCertificate?: boolean;
+
+  /**
+   * Optional raw ODBC connection string.
+   * If provided, ForgeSQL will use this EXACT string to connect.
+   */
+  connectionString?: string;
 };
 
-export type DbOpenResponse = { ok: true } | { ok: false; error: string };
+export type DbOpenResponse = {
+  ok: boolean;
+  error?: string;
+
+  /**
+   * The actual connection string ForgeSQL used (raw if provided, generated otherwise).
+   */
+  connectionString?: string;
+};
 
 export type DbListDatabasesResponse =
   | { ok: true; databases: string[] }

@@ -54,12 +54,17 @@ export default function App() {
   async function connect(profile: SqlServerConnectionProfile) {
     setStatus("Connecting...");
 
-    const openResp = await dbforge.open(profile);
+const openResp = await dbforge.open(profile);
 if (!openResp.ok) {
   setStatus(`Connect failed: ${openResp.error}`);
   setConnState("disconnected");
   return;
 }
+
+if (openResp.connectionString) {
+  setStatus("Connected. Connection string available in Connect dialog.");
+}
+
 
 
     setConnState("connected");

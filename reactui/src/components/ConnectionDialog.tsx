@@ -1,3 +1,4 @@
+// File: reactui/src/components/ConnectionDialog.tsx
 import { useMemo, useState } from "react";
 import type { SqlServerConnectionProfile } from "../../../electron/shared/types";
 
@@ -34,6 +35,7 @@ function loadProfile(): SqlServerConnectionProfile {
           : { kind: "windows" },
       encrypt: p.encrypt ?? DEFAULT_PROFILE.encrypt,
       trustServerCertificate: p.trustServerCertificate ?? DEFAULT_PROFILE.trustServerCertificate,
+      connectionString: p.connectionString ?? "",
     };
   } catch {
     return DEFAULT_PROFILE;
@@ -42,19 +44,75 @@ function loadProfile(): SqlServerConnectionProfile {
 
 type AuthKind = "windows" | "sql";
 
+function normalizeServer(raw: string): string {
+  const s = (raw ?? "").trim();
+  if (!s) return ".";
+  const lower = s.toLowerCase();
+  if (s === "." || lower === "localhost" || lower === "(local)") return ".";
+  return s;
+}
+
+function buildOdbcConnectionString(p: {
+  server: string;
+  database: string;
+  authKind: AuthKind;
+  user: string;
+  password: string;
+  encrypt: boolean;
+  trustServerCertificate: boolean;
+}): string {
+  const driver = "ODBC Driver 17 for SQL Server";
+  const parts: string[] = [];
+  parts.push(`Driver={${driver}}`);
+  parts.push(`Server=${normalizeServer(p.server)}`);
+  parts.push(`Database=${(p.database || "master").trim() || "master"}`);
+
+  if (p.authKind === "windows") parts.push("Trusted_Connection=Yes");
+  else {
+    parts.push(`Uid=${p.user}`);
+    parts.push(`Pwd=${p.password}`);
+  }
+
+  parts.push(`Encrypt=${p.encrypt ? "Yes" : "No"}`);
+  parts.push(`TrustServerCertificate=${p.trustServerCertificate ? "Yes" : "No"}`);
+
+  return parts.join(";") + ";";
+}
+
 export default function ConnectionDialog({ show, onClose, onConnect }: Props) {
   const [initial] = useState(loadProfile);
 
   const [name, setName] = useState(initial.name);
-  const [server, setServer] = useState(initial.server);
+  const [server, setServer] = useState(initial.server ?? ".");
   const [database, setDatabase] = useState(initial.database ?? "master");
-const [authKind, setAuthKind] = useState<AuthKind>(initial.auth.kind === "sql" ? "sql" : "windows");
-const [user, setUser] = useState(initial.auth.kind === "sql" ? initial.auth.user : "");
 
-const [password, setPassword] = useState(initial.auth.kind === "sql" ? initial.auth.password : "");
+  const [authKind, setAuthKind] = useState<AuthKind>(initial.auth.kind === "sql" ? "sql" : "windows");
+  const [user, setUser] = useState(initial.auth.kind === "sql" ? initial.auth.user : "");
+  const [password, setPassword] = useState(initial.auth.kind === "sql" ? initial.auth.password : "");
 
   const [encrypt, setEncrypt] = useState(initial.encrypt ?? false);
   const [trustServerCertificate, setTrustServerCertificate] = useState(initial.trustServerCertificate ?? true);
+
+  // Connection string box:
+  const [useRawConnStr, setUseRawConnStr] = useState<boolean>(!!(initial.connectionString ?? "").trim());
+  const [rawConnStr, setRawConnStr] = useState<string>(initial.connectionString ?? "");
+
+  const generatedConnStr = useMemo(() => {
+    return buildOdbcConnectionString({
+      server,
+      database,
+      authKind,
+      user,
+      password,
+      encrypt,
+      trustServerCertificate,
+    });
+  }, [server, database, authKind, user, password, encrypt, trustServerCertificate]);
+
+  const effectiveConnStr = useMemo(() => {
+    const raw = (rawConnStr ?? "").trim();
+    return useRawConnStr && raw ? raw : generatedConnStr;
+  }, [useRawConnStr, rawConnStr, generatedConnStr]);
 
   const profile: SqlServerConnectionProfile = useMemo(
     () => ({
@@ -64,8 +122,9 @@ const [password, setPassword] = useState(initial.auth.kind === "sql" ? initial.a
       auth: authKind === "windows" ? { kind: "windows" } : { kind: "sql", user, password },
       encrypt,
       trustServerCertificate,
+      connectionString: useRawConnStr ? (rawConnStr ?? "").trim() : "",
     }),
-    [name, server, database, authKind, user, password, encrypt, trustServerCertificate]
+    [name, server, database, authKind, user, password, encrypt, trustServerCertificate, useRawConnStr, rawConnStr],
   );
 
   function handleConnect() {
@@ -73,17 +132,20 @@ const [password, setPassword] = useState(initial.auth.kind === "sql" ? initial.a
     onConnect(profile);
   }
 
+  async function handleCopyConnStr() {
+    try {
+      await navigator.clipboard.writeText(effectiveConnStr);
+    } catch {
+      // fallback: user can still select + copy manually
+    }
+  }
+
   if (!show) return null;
 
   return (
     <div className="position-fixed top-0 start-0 w-100 h-100" style={{ background: "rgba(0,0,0,0.4)" }}>
       <div className="bg-white rounded shadow position-absolute top-50 start-50 translate-middle p-3" style={{ width: 520 }}>
-        <div className="d-flex align-items-center mb-2">
-          <h5 className="mb-0">Connect to SQL Server</h5>
-          <button className="btn btn-sm btn-outline-secondary ms-auto" onClick={onClose}>
-            Close
-          </button>
-        </div>
+        <h5 className="mb-3">Connect to SQL Server</h5>
 
         <div className="mb-2">
           <label className="form-label">Profile Name</label>
@@ -135,7 +197,13 @@ const [password, setPassword] = useState(initial.auth.kind === "sql" ? initial.a
           </div>
           <div className="col-6">
             <div className="form-check">
-              <input className="form-check-input" type="checkbox" checked={trustServerCertificate} onChange={(e) => setTrustServerCertificate(e.target.checked)} id="chkTrust" />
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={trustServerCertificate}
+                onChange={(e) => setTrustServerCertificate(e.target.checked)}
+                id="chkTrust"
+              />
               <label className="form-check-label" htmlFor="chkTrust">
                 Trust Server Certificate
               </label>
@@ -143,7 +211,63 @@ const [password, setPassword] = useState(initial.auth.kind === "sql" ? initial.a
           </div>
         </div>
 
-        <div className="d-flex gap-2">
+        {/* NEW: Connection string box (generate + paste into same textbox) */}
+        <div className="mb-2">
+          <div className="d-flex align-items-center">
+            <label className="form-label mb-0">Connection String</label>
+            <div className="ms-auto d-flex gap-2">
+              <button className="btn btn-sm btn-outline-secondary" type="button" onClick={handleCopyConnStr}>
+                <i className="bi bi-clipboard me-1" />
+                Copy
+              </button>
+            </div>
+          </div>
+
+          <textarea
+            className="form-control font-monospace"
+            rows={3}
+            value={useRawConnStr ? rawConnStr : generatedConnStr}
+            onChange={(e) => {
+              // If they type here, we assume they want to use the raw string.
+              setUseRawConnStr(true);
+              setRawConnStr(e.target.value);
+            }}
+            spellCheck={false}
+          />
+
+          <div className="d-flex align-items-center mt-2">
+            <div className="form-check">
+              <input
+                className="form-check-input"
+                type="checkbox"
+                checked={useRawConnStr}
+                onChange={(e) => setUseRawConnStr(e.target.checked)}
+                id="chkUseRaw"
+              />
+              <label className="form-check-label" htmlFor="chkUseRaw">
+                Use raw connection string (paste your existing server string here)
+              </label>
+            </div>
+
+            {useRawConnStr && (
+              <button
+                className="btn btn-sm btn-outline-primary ms-auto"
+                type="button"
+                onClick={() => setRawConnStr(generatedConnStr)}
+                title="Replace raw string with generated"
+              >
+                Use Generated
+              </button>
+            )}
+          </div>
+
+          <div className="form-text">
+            This box is both: (1) the generated string you can copy, and (2) where you can paste a connection string to connect to an existing server configuration.
+            If the string contains a password, treat it like a secret.
+          </div>
+        </div>
+
+        <div className="d-flex gap-2 mt-3">
           <button className="btn btn-primary" onClick={handleConnect}>
             <i className="bi bi-plug me-1" />
             Connect

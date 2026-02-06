@@ -1,4 +1,14 @@
-Now I see my views, but not my tables.
+OK, this works.
+I'd like to make some changes to the UI.
+We might want to use BootStrap cards or something. When I select a table that has a lot of data, the table and view navigation on the left gets smashed.
+Also, we want to make use of some sort of table editor like DataTables.
+
+The editor fields need to be datatype aware.
+
+- dates get a date picker
+- numbers get a number element
+- large text gets a textArea
+- etc...
 
 ## package.md
 
