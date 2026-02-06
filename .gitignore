@@ -1,35 +1,97 @@
-# Gradle files
-.gradle/
+###############################################################################
+# OS / Editor junk
+###############################################################################
+.DS_Store
+Thumbs.db
+desktop.ini
+
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+.idea/
+*.swp
+*.swo
+
+###############################################################################
+# Node / Electron
+###############################################################################
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+dist/
 build/
+out/
+.release/
+*.map
 
-# Local configuration file (sdk path, etc)
-local.properties
+###############################################################################
+# Electron build output
+###############################################################################
+electron/dist/
+electron/out/
+electron/.tsup/
 
-# Log/OS Files
+###############################################################################
+# Vite / React
+###############################################################################
+reactui/node_modules/
+reactui/dist/
+reactui/.vite/
+reactui/.turbo/
+
+###############################################################################
+# Environment / secrets
+###############################################################################
+.env
+.env.*
+!.env.example
+
+###############################################################################
+# Logs
+###############################################################################
+logs/
 *.log
 
-# Android Studio generated files and folders
-captures/
-.externalNativeBuild/
-.cxx/
-*.aab
-*.apk
-output-metadata.json
+###############################################################################
+# SQL / Database artifacts (IMPORTANT)
+###############################################################################
+# Local / demo databases
+*.mdf
+*.ldf
+*.ndf
+*.bak
+*.db
+*.sqlite
+*.sqlite3
 
-# IntelliJ
-*.iml
-.idea/
-misc.xml
-deploymentTargetDropDown.xml
-render.experimental.xml
+# Explicit demo / scratch databases
+TradeFolioDemo*
+TradeFolio*
+Demo*
+Scratch*
+LocalTest*
 
-# Keystore files
-*.jks
-*.keystore
+###############################################################################
+# Generated / transient SQL artifacts
+###############################################################################
+*.sqlproj.user
+*.publish.xml
+*.dacpac
+*.bacpac
 
-# Google Services (e.g. APIs or Firebase)
-google-services.json
+###############################################################################
+# Coverage / testing
+###############################################################################
+coverage/
+.nyc_output/
 
-# Android Profiling
-*.hprof
-node_modules
+###############################################################################
+# Misc
+###############################################################################
+tmp/
+temp/
+.cache/

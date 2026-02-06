@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "2026-02-05.md",
-                "mode": "source",
+                "file": "prompt.md",
+                "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "2026-02-05"
+              "title": "prompt"
             }
           }
         ]
@@ -94,7 +94,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "2026-02-05.md",
+                "file": "prompt.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -104,7 +104,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for 2026-02-05"
+              "title": "Backlinks for prompt"
             }
           },
           {
@@ -113,12 +113,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "2026-02-05.md",
+                "file": "prompt.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Outgoing links from 2026-02-05"
+              "title": "Outgoing links from prompt"
             }
           },
           {
@@ -156,13 +156,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "2026-02-05.md",
+                "file": "prompt.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of 2026-02-05"
+              "title": "Outline of prompt"
             }
           }
         ]
@@ -185,51 +185,51 @@
   },
   "active": "bb89ff7907e082ac",
   "lastOpenFiles": [
-    "reactui/package-lock.json",
-    "tsup.config.bundled_9azsxwzj5o6.mjs",
-    "tsup.config.bundled_6df36xnc5mc.mjs",
-    "tsup.config.bundled_onmk5ioly3.mjs",
-    "reactui/dist/assets/index-CNYeIh3g.js",
-    "reactui/node_modules/@types/react-dom/test-utils/index.d.ts",
-    "reactui/node_modules/@types/react-dom/test-utils",
-    "reactui/node_modules/@types/react-dom/experimental.d.ts",
-    "reactui/node_modules/@types/react-dom/static.node.d.ts",
-    "reactui/node_modules/@types/react-dom/static.edge.d.ts",
-    "reactui/node_modules/@types/react-dom/static.browser.d.ts",
-    "reactui/dist/vite.svg",
-    "reactui/node_modules/scheduler/README.md",
-    "reactui/node_modules/punycode/README.md",
-    "reactui/node_modules/hermes-parser/README.md",
-    "reactui/node_modules/yallist/README.md",
-    "reactui/node_modules/electron-to-chromium/README.md",
-    "reactui/node_modules/node-releases/README.md",
-    "reactui/node_modules/baseline-browser-mapping/README.md",
-    "reactui/node_modules/has-flag/readme.md",
-    "reactui/node_modules/supports-color/readme.md",
-    "reactui/node_modules/ms/readme.md",
-    "reactui/node_modules/ms/license.md",
-    "reactui/node_modules/tinyglobby/README.md",
-    "reactui/node_modules/fdir/README.md",
-    "reactui/node_modules/picomatch/README.md",
-    "node_modules/@types/mssql/README.md",
-    "node_modules/simple-concat/README.md",
+    "tsup.config.bundled_xlhw30jva9c.mjs",
+    "electron/dist/main/index.js.map",
+    "tsup.config.bundled_35iuk90pulk.mjs",
+    "tsup.config.bundled_t0k4zrj7zqg.mjs",
+    "tsup.config.bundled_v6e9vf0n34l.mjs",
+    "tsup.config.bundled_3k53ss1lvuu.mjs",
+    "tsup.config.bundled_hhso1ph7c6.mjs",
+    "tsup.config.bundled_nvyqu0paoj.mjs",
+    "electron/dist/main/index.js",
+    "tsup.config.bundled_hhsqshd4yq8.mjs",
+    "tsup.config.bundled_i4sllvz0v6.mjs",
+    "node_modules/path-key/readme.md",
+    "node_modules/ms/license.md",
+    "node_modules/ms/readme.md",
+    "node_modules/load-tsconfig/README.md",
+    "node_modules/joycon/README.md",
+    "node_modules/picocolors/README.md",
+    "node_modules/buffer/AUTHORS.md",
+    "node_modules/buffer/README.md",
+    "reactui/node_modules/resolve-from/readme.md",
+    "reactui/node_modules/is-glob/README.md",
+    "reactui/node_modules/is-extglob/README.md",
+    "reactui/node_modules/imurmurhash/README.md",
+    "reactui/node_modules/estraverse/README.md",
+    "reactui/node_modules/esrecurse/README.md",
+    "reactui/node_modules/brace-expansion/README.md",
+    "reactui/node_modules/balanced-match/README.md",
+    "reactui/node_modules/balanced-match/LICENSE.md",
+    "node_modules/typescript/SECURITY.md",
+    "node_modules/rollup/LICENSE.md",
+    "node_modules/jws/readme.md",
+    "node_modules/jws/CHANGELOG.md",
+    "node_modules/events/Readme.md",
     "node_modules/tar-fs/README.md",
-    "node_modules/msnodesqlv8/README.md",
-    "node_modules/node-addon-api/tools/README.md",
-    "node_modules/node-addon-api/README.md",
-    "node_modules/node-addon-api/LICENSE.md",
-    "node_modules/tunnel-agent/README.md",
-    "node_modules/detect-libc/README.md",
-    "node_modules/fs-constants/README.md",
-    "node_modules/deep-extend/README.md",
+    "node_modules/es-errors/README.md",
+    "node_modules/asynckit/README.md",
+    "node_modules/js-md4/doc/fonts/OpenSans-Regular-webfont.svg",
+    "node_modules/js-md4/doc/fonts/OpenSans-LightItalic-webfont.svg",
+    "node_modules/js-md4/doc/fonts/OpenSans-Light-webfont.svg",
+    "node_modules/js-md4/doc/fonts/OpenSans-Italic-webfont.svg",
+    "node_modules/js-md4/doc/fonts/OpenSans-BoldItalic-webfont.svg",
+    "node_modules/js-md4/doc/fonts/OpenSans-Bold-webfont.svg",
+    "node_modules/concurrently/docs/demo.gif",
+    "reactui/dist/vite.svg",
     "reactui/node_modules/bootstrap-icons/icons/chevron-up.svg",
-    "reactui/node_modules/bootstrap-icons/icons/chat-square-text.svg",
-    "reactui/node_modules/bootstrap-icons/icons/chat-square-text-fill.svg",
-    "reactui/node_modules/bootstrap-icons/icons/chat-square-quote.svg",
-    "reactui/node_modules/bootstrap-icons/icons/chat-square-quote-fill.svg",
-    "reactui/node_modules/bootstrap-icons/icons/chat-square-heart.svg",
-    "reactui/node_modules/bootstrap-icons/icons/chat-square-fill.svg",
-    "reactui/node_modules/bootstrap-icons/icons/chat-square-heart-fill.svg",
-    "reactui/node_modules/bootstrap-icons/icons/chat-right.svg"
+    "reactui/node_modules/bootstrap-icons/icons/chat-square-text.svg"
   ]
 }

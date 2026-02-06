@@ -22,6 +22,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 
 // electron/main/index.ts
+var import_util = __toESM(require("util"));
 var import_electron = require("electron");
 var import_path = __toESM(require("path"));
 
@@ -29,67 +30,60 @@ var import_path = __toESM(require("path"));
 var import_msnodesqlv8 = __toESM(require("mssql/msnodesqlv8"));
 var pool = null;
 function normalizeServer(raw) {
-  const s0 = (raw ?? "").trim();
-  const s = s0.replace(/^tcp:/i, "");
-  const comma = s.lastIndexOf(",");
-  if (comma > 0) {
-    const host = s.substring(0, comma).trim();
-    const portStr = s.substring(comma + 1).trim();
-    const port = Number(portStr);
-    if (Number.isFinite(port) && port > 0) return { host, port };
-  }
-  if (s.toLowerCase().startsWith("(localdb)\\")) {
-    return { host: s };
-  }
-  if (s.startsWith(".\\")) {
-    const instanceName = s.substring(2);
-    return { host: "localhost", instanceName: instanceName || void 0 };
-  }
-  const idx = s.indexOf("\\");
-  if (idx > 0) {
-    const host = s.substring(0, idx);
-    const instanceName = s.substring(idx + 1);
-    return { host, instanceName: instanceName || void 0 };
-  }
-  if (s === ".") return { host: "(local)" };
-  return { host: s || "localhost" };
+  const s = (raw ?? "").trim();
+  if (!s) return ".";
+  const lower = s.toLowerCase();
+  if (s === "." || lower === "localhost" || lower === "(local)") return ".";
+  return s;
 }
 function buildConfig(profile) {
+  const rawServer = (profile.server ?? ".").trim();
+  const server = normalizeServer(rawServer);
+  const database = profile.database ?? "master";
+  const driver = "ODBC Driver 17 for SQL Server";
   const encrypt = profile.encrypt ?? false;
   const trustServerCertificate = profile.trustServerCertificate ?? true;
-  const normalized = normalizeServer(profile.server);
-  const host = normalized.host === "." || normalized.host.toLowerCase() === "localhost" || normalized.host === "(local)" ? "." : normalized.host;
-  const db = profile.database ?? "master";
-  let serverPart = host;
-  if (normalized.instanceName) serverPart = `${host}\\${normalized.instanceName}`;
-  if (normalized.port) serverPart = `${host},${normalized.port}`;
   const parts = [];
-  parts.push(`Server=${serverPart}`);
-  parts.push(`Database=${db}`);
-  if (profile.auth.kind === "sql") {
+  parts.push(`Driver={${driver}}`);
+  parts.push(`Server=${server}`);
+  parts.push(`Database=${database}`);
+  if (profile.auth.kind === "windows") {
+    parts.push(`Trusted_Connection=Yes`);
+  } else {
     parts.push(`Uid=${profile.auth.user}`);
     parts.push(`Pwd=${profile.auth.password}`);
-  } else {
-    parts.push(`Trusted_Connection=Yes`);
   }
-  if (trustServerCertificate) parts.push(`TrustServerCertificate=Yes`);
-  if (encrypt) parts.push(`Encrypt=Yes`);
+  parts.push(`Encrypt=${encrypt ? "Yes" : "No"}`);
+  parts.push(`TrustServerCertificate=${trustServerCertificate ? "Yes" : "No"}`);
+  const connectionString = parts.join(";") + ";";
   return {
-    connectionString: parts.join(";") + ";"
+    driver,
+    connectionString,
+    options: {
+      // still okay to include; connectionString is what matters
+      trustedConnection: profile.auth.kind === "windows"
+    }
   };
 }
 async function openDb(profile) {
   await closeDb();
   const cfg = buildConfig(profile);
+  console.log("[db] connecting with cfg:", {
+    server: cfg.server,
+    database: cfg.database,
+    trustedConnection: cfg.options?.trustedConnection,
+    user: cfg.user ? "<set>" : "<none>",
+    driver: cfg.driver,
+    connectionString: cfg.connectionString ? "<set>" : "<none>"
+  });
   pool = await new import_msnodesqlv8.default.ConnectionPool(cfg).connect();
 }
 async function closeDb() {
-  if (pool) {
-    try {
-      await pool.close();
-    } finally {
-      pool = null;
-    }
+  if (!pool) return;
+  try {
+    await pool.close();
+  } finally {
+    pool = null;
   }
 }
 async function queryText(sqlText) {
@@ -126,23 +120,24 @@ var win = null;
 function formatError(e) {
   if (!e) return "Unknown error (empty).";
   if (typeof e === "string") return e;
-  if (e.message) return String(e.message);
-  if (e.originalError?.message) return String(e.originalError.message);
-  if (e.code || e.number || e.state) {
-    const bits = [
-      e.code ? `code=${e.code}` : null,
-      e.number ? `number=${e.number}` : null,
-      e.state ? `state=${e.state}` : null,
-      e.class ? `class=${e.class}` : null,
-      e.serverName ? `server=${e.serverName}` : null
-    ].filter(Boolean);
-    const details = bits.length ? ` (${bits.join(", ")})` : "";
-    return `Database error${details}`;
-  }
+  const msg = e?.message ? String(e.message) : "";
+  if (msg && msg !== "[object Object]") return msg;
+  const nestedMsg = e?.originalError?.message ?? e?.cause?.message ?? e?.innerError?.message ?? e?.error?.message;
+  if (nestedMsg) return String(nestedMsg);
+  const bits = [
+    e.code ? `code=${e.code}` : null,
+    e.number ? `number=${e.number}` : null,
+    e.state ? `state=${e.state}` : null,
+    e.class ? `class=${e.class}` : null,
+    e.serverName ? `server=${e.serverName}` : null,
+    e.sqlstate ? `sqlstate=${e.sqlstate}` : null
+  ].filter(Boolean);
   try {
-    return JSON.stringify(e, Object.getOwnPropertyNames(e), 2);
+    const dump = JSON.stringify(e, Object.getOwnPropertyNames(e), 2);
+    return bits.length ? `${bits.join(", ")}
+${dump}` : dump;
   } catch {
-    return String(e);
+    return bits.length ? bits.join(", ") : String(e);
   }
 }
 async function createWindow() {
@@ -175,7 +170,13 @@ import_electron.ipcMain.handle(
       return { ok: true };
     } catch (e) {
       console.error("db:open failed raw:", e);
-      console.error("db:open failed formatted:", formatError(e));
+      console.error("db:open failed inspect:", import_util.default.inspect(e, { depth: 10, colors: false, showHidden: true }));
+      if (e?.originalError) {
+        console.error("db:open originalError inspect:", import_util.default.inspect(e.originalError, { depth: 10, colors: false, showHidden: true }));
+      }
+      if (e?.cause) {
+        console.error("db:open cause inspect:", import_util.default.inspect(e.cause, { depth: 10, colors: false, showHidden: true }));
+      }
       return { ok: false, error: formatError(e) };
     }
   }
@@ -186,7 +187,13 @@ import_electron.ipcMain.handle("db:close", async () => {
     return { ok: true };
   } catch (e) {
     console.error("db:open failed raw:", e);
-    console.error("db:open failed formatted:", formatError(e));
+    console.error("db:open failed inspect:", import_util.default.inspect(e, { depth: 10, colors: false, showHidden: true }));
+    if (e?.originalError) {
+      console.error("db:open originalError inspect:", import_util.default.inspect(e.originalError, { depth: 10, colors: false, showHidden: true }));
+    }
+    if (e?.cause) {
+      console.error("db:open cause inspect:", import_util.default.inspect(e.cause, { depth: 10, colors: false, showHidden: true }));
+    }
     return { ok: false, error: formatError(e) };
   }
 });
@@ -199,7 +206,13 @@ import_electron.ipcMain.handle(
       return { ok: true, databases };
     } catch (e) {
       console.error("db:open failed raw:", e);
-      console.error("db:open failed formatted:", formatError(e));
+      console.error("db:open failed inspect:", import_util.default.inspect(e, { depth: 10, colors: false, showHidden: true }));
+      if (e?.originalError) {
+        console.error("db:open originalError inspect:", import_util.default.inspect(e.originalError, { depth: 10, colors: false, showHidden: true }));
+      }
+      if (e?.cause) {
+        console.error("db:open cause inspect:", import_util.default.inspect(e.cause, { depth: 10, colors: false, showHidden: true }));
+      }
       return { ok: false, error: formatError(e) };
     }
   }
@@ -211,7 +224,13 @@ import_electron.ipcMain.handle("db:listTables", async () => {
     return { ok: true, tables };
   } catch (e) {
     console.error("db:open failed raw:", e);
-    console.error("db:open failed formatted:", formatError(e));
+    console.error("db:open failed inspect:", import_util.default.inspect(e, { depth: 10, colors: false, showHidden: true }));
+    if (e?.originalError) {
+      console.error("db:open originalError inspect:", import_util.default.inspect(e.originalError, { depth: 10, colors: false, showHidden: true }));
+    }
+    if (e?.cause) {
+      console.error("db:open cause inspect:", import_util.default.inspect(e.cause, { depth: 10, colors: false, showHidden: true }));
+    }
     return { ok: false, error: formatError(e) };
   }
 });
@@ -222,7 +241,13 @@ import_electron.ipcMain.handle("db:listViews", async () => {
     return { ok: true, views };
   } catch (e) {
     console.error("db:open failed raw:", e);
-    console.error("db:open failed formatted:", formatError(e));
+    console.error("db:open failed inspect:", import_util.default.inspect(e, { depth: 10, colors: false, showHidden: true }));
+    if (e?.originalError) {
+      console.error("db:open originalError inspect:", import_util.default.inspect(e.originalError, { depth: 10, colors: false, showHidden: true }));
+    }
+    if (e?.cause) {
+      console.error("db:open cause inspect:", import_util.default.inspect(e.cause, { depth: 10, colors: false, showHidden: true }));
+    }
     return { ok: false, error: formatError(e) };
   }
 });
@@ -238,7 +263,13 @@ import_electron.ipcMain.handle(
       };
     } catch (e) {
       console.error("db:open failed raw:", e);
-      console.error("db:open failed formatted:", formatError(e));
+      console.error("db:open failed inspect:", import_util.default.inspect(e, { depth: 10, colors: false, showHidden: true }));
+      if (e?.originalError) {
+        console.error("db:open originalError inspect:", import_util.default.inspect(e.originalError, { depth: 10, colors: false, showHidden: true }));
+      }
+      if (e?.cause) {
+        console.error("db:open cause inspect:", import_util.default.inspect(e.cause, { depth: 10, colors: false, showHidden: true }));
+      }
       return { ok: false, error: formatError(e) };
     }
   }
