@@ -1,4 +1,6 @@
-Uncaught SyntaxError: The requested module '/node_modules/.vite/deps/@tanstack_react-table.js?v=3885f3bc' does not provide an export named 'ColumnDef' (at TableEditor.tsx:4:3)
+I want to create another project, based off of this one.
+It will be called SQLForgeCS, and it will be a C# project.
+We can stick with React.    
 
 ## package.md
 

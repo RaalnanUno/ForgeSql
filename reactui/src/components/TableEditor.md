@@ -1,15 +1,19 @@
+
 // File: reactui/src/components/TableEditor.tsx
 import { useEffect, useMemo, useState } from "react";
 import {
-  ColumnDef,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import type { ColumnDef } from "@tanstack/react-table";
+
 import { dbforge } from "../api/dbforge";
 import type { DbColumnInfo } from "../../../electron/shared/types";
+
+
 
 type Props = {
   fullName: string;                 // dbo.Table
